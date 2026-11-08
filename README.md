@@ -31,7 +31,7 @@ taken or refused.
 
 ## Status: early (alpha). Read the honest part
 
-- About 670 automated tests pass, and the Docker setup has been run end to end on simulated prices.
+- About 680 automated tests pass (checked on every push, on Python 3.11, 3.12 and 3.13), and the Docker setup has been run end to end on simulated prices.
 - **The live Angel One connection and real order placement have never been run against the real servers.** They are
   written to Angel One's documented formats and need a supervised 1-lot test before anyone relies on them.
   See [What has and has not been verified](#what-has-and-has-not-been-verified).
@@ -63,7 +63,7 @@ Open **http://127.0.0.1:8000/**. You will see the dashboard on made-up prices. T
 - Contributions are welcome: [CONTRIBUTING.md](CONTRIBUTING.md) (including the safety rules a change must never break).
 - Security issues: please report privately, see [SECURITY.md](SECURITY.md).
 - Be kind: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-- License: [MIT](LICENSE). The software is provided as is, with no warranty and no liability.
+- License: [MIT](LICENSE). The software is provided as is, with no warranty and no liability. Please also read the [Disclaimer](DISCLAIMER.md).
 
 ---
 

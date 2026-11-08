@@ -13,10 +13,15 @@ read = lambda p: (ROOT / p).read_text()
 
 # ============================================================ open-source files
 
-def test_license_is_mit_and_carries_the_trading_disclaimer():
+def test_license_is_standard_mit_and_the_trading_disclaimer_is_separate_and_linked():
     lic = read("LICENSE")
     assert lic.startswith("MIT License") and "Permission is hereby granted, free of charge" in lic
-    assert 'WITHOUT WARRANTY OF ANY KIND' in lic and "most\nretail F&O traders lose money" in lic and "not\ninvestment advice" in lic
+    assert "WITHOUT WARRANTY OF ANY KIND" in lic
+    assert "DISCLAIMER" not in lic.upper().replace("DISCLAIMS", "")        # keep it pure so GitHub recognises "MIT"
+    d = read("DISCLAIMER.md")
+    for needle in ("not investment advice", "most retail F&O traders lose money", "not affiliated with", "have **not** been verified"):
+        assert needle in d, needle
+    assert "DISCLAIMER.md" in read("README.md")
 
 
 def test_contributing_states_every_safety_rule_a_change_must_keep():
@@ -45,8 +50,8 @@ def test_github_templates_and_ci_exist_and_are_valid():
     uses = [s["uses"] for s in steps if "uses" in s]
     assert all(re.search(r"@v\d+$", u) for u in uses)                       # pinned to a major version, not @main
     assert any("pytest" in s.get("run", "") for s in steps)
-    assert "3.13" in wf["jobs"]["test"]["strategy"]["matrix"]["python-version"]
-    assert "!= '3.13'" in wf["jobs"]["test"]["continue-on-error"]            # only the tested version can fail the build
+    assert set(wf["jobs"]["test"]["strategy"]["matrix"]["python-version"]) == {"3.11", "3.12", "3.13"}
+    assert "continue-on-error" not in wf["jobs"]["test"]                    # every supported version must pass
 
 
 def test_package_metadata_describes_an_open_source_educational_project():

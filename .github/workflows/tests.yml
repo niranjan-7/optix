@@ -11,9 +11,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.13", "3.12", "3.11"]
-    # Python 3.13 is the version the project is developed and tested on. 3.11 and 3.12 are expected to work
-    # but are unverified, so they may fail without failing the build.
-    continue-on-error: ${{ matrix.python-version != '3.13' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

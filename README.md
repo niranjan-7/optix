@@ -1,4 +1,4 @@
-# NIFTY Options Trading Assistant
+# Optix: NIFTY Options Trading Assistant
 
 **An open-source, paper-first toolkit for learning to trade NIFTY options with Angel One's SmartAPI.**
 
@@ -10,7 +10,7 @@ review), and to show how a trading system can be built with safety first. It is 
 > **New here? Start with the Beginner's Guide:** [PDF](docs/Beginners-Guide.pdf) · [Markdown](docs/user-guide.md).
 > It walks you from downloading the project, to creating your Angel One API key, to your first paper trade.
 
-[![tests](../../actions/workflows/tests.yml/badge.svg)](../../actions/workflows/tests.yml)
+[![tests](https://github.com/niranjan-7/optix/actions/workflows/tests.yml/badge.svg)](https://github.com/niranjan-7/optix/actions/workflows/tests.yml)
 
 ## Why this exists
 
@@ -49,8 +49,8 @@ project simply uses it.
 You need [Git](https://git-scm.com/downloads) and [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ```bash
-git clone https://github.com/<your-account>/<this-repo>.git
-cd <this-repo>
+git clone https://github.com/niranjan-7/optix.git
+cd optix
 cp .env.example .env          # then edit .env: set WEBHOOK_SECRET and TRADER_FEED=simulated (see the guide)
 scripts/start.sh              # Windows: docker compose up -d --build
 ```

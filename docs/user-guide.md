@@ -1,6 +1,6 @@
 # Beginner's Guide: from download to your first paper trade
 
-**NIFTY Options Trading Assistant** - an open-source, paper-first toolkit for learning options trading with Angel One's SmartAPI.
+**Optix (NIFTY Options Trading Assistant)** - an open-source, paper-first toolkit for learning options trading with Angel One's SmartAPI.
 
 This guide is for complete beginners. You do not need to know programming. It takes you step by step from downloading the project
 from GitHub, to creating your Angel One API key, to putting it in the right place, to using the application every day.
@@ -74,8 +74,8 @@ docker compose version
 In the Terminal, go to a folder where you keep things (for example your home folder) and download ("clone") the project:
 
 ```
-git clone https://github.com/<your-account>/<repo-name>.git
-cd <repo-name>
+git clone https://github.com/niranjan-7/optix.git
+cd optix
 ```
 
 Now you are inside the project folder. Type `ls` to list what is there. The parts you will use:

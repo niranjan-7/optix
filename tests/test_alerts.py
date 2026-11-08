@@ -21,7 +21,7 @@ from trader.journal import Journal
 from trader.risk import Decision, Rejection
 
 CHAT = 424242
-TOKEN = "123456789:AAFakeTokenValueUsedOnlyInTestsXYZ_0123"
+TOKEN = "123456789:AA-fake-token-for-tests-only"
 
 
 class FakeTelegram:

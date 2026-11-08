@@ -249,7 +249,7 @@ def footer(canvas, doc) -> None:
     canvas.line(MARGIN, 14 * mm, PAGE_W - MARGIN, 14 * mm)
     canvas.setFont("Helvetica", 8)
     canvas.setFillColor(GREY)
-    canvas.drawString(MARGIN, 9.5 * mm, "NIFTY Options Trading Assistant - Beginner's Guide  |  open-source, paper-first, not investment advice")
+    canvas.drawString(MARGIN, 9.5 * mm, "Optix (NIFTY Options Trading Assistant) - Beginner's Guide  |  open-source, paper-first, not investment advice")
     canvas.drawRightString(PAGE_W - MARGIN, 9.5 * mm, f"Page {doc.page}")
     canvas.restoreState()
 
@@ -282,7 +282,7 @@ def build(src: Path = SRC, out: Path = OUT) -> Path:
         else:
             story += flow([b], AVAIL, src.parent)
     doc = GuideDoc(str(out), pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=16 * mm, bottomMargin=20 * mm,
-                   title="NIFTY Options Trading Assistant - Beginner's Guide", author="Niranjan K",
+                   title="Optix - Beginner's Guide", author="Niranjan K",
                    subject=f"From GitHub download to your first paper trade [source {fingerprint}]", keywords="options, NIFTY, Angel One, SmartAPI, paper trading")
     doc.addPageTemplates([PageTemplate(id="main", frames=[Frame(MARGIN, 20 * mm, AVAIL, PAGE_H - 36 * mm, id="f")], onPage=footer)])
     doc.multiBuild(story)

@@ -22,6 +22,11 @@ classifiers = [
     "Topic :: Education",
 ]
 
+[project.urls]
+Homepage = "https://github.com/niranjan-7/optix"
+Repository = "https://github.com/niranjan-7/optix"
+Issues = "https://github.com/niranjan-7/optix/issues"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

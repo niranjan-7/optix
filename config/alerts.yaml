@@ -1,0 +1,33 @@
+# Telegram alerts and phone commands. Credentials are NOT here - they live in .env.
+# Deliberate git commit + CHANGELOG line for any change.
+version: 1
+enabled: true
+
+# What to send. Refusals are your "rule violations", so they are on by default.
+send_signals: true
+send_rejections: true
+send_orders: true
+send_fills: true
+# (kill switch, daily loss limit, feed trouble, warnings and the daily summary are always sent)
+
+# Alert if market data is unhealthy for this long during market hours, then remind every
+# feed_reminder_seconds. With open positions this is CRITICAL (stops are not being watched).
+feed_unhealthy_after_seconds: 15
+feed_reminder_seconds: 300
+market_open: "09:15"
+market_close: "15:30"
+daily_summary_time: "15:45"
+
+# Flood control for routine alerts (critical alerts and replies to your commands always go).
+max_messages_per_minute: 20
+burst: 8
+max_queue: 200
+repeat_window_seconds: 60      # identical refusals inside this window are folded into one message
+
+# Phone commands: /status /positions /summary /kill /reset (private chat with your own ID only)
+accept_commands: true
+command_poll_seconds: 25
+command_max_age_seconds: 60    # older messages are ignored (protects against replays after a restart)
+reset_code_ttl_seconds: 120
+
+state_file: data/alerts_state.json

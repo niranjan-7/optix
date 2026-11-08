@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trading Dashboard</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <h1>Options Trading</h1>
+      <p id="subtitle">Loading…</p>
+    </div>
+    <div class="pills" aria-label="System status">
+      <span class="pill" id="pill-mode"><i class="dot"></i><b>MODE</b> <span>…</span></span>
+      <span class="pill" id="pill-feed"><i class="dot"></i><b>FEED</b> <span>…</span></span>
+      <span class="pill" id="pill-risk"><i class="dot"></i><b>RISK</b> <span>…</span></span>
+      <span class="pill" id="pill-window"><i class="dot"></i><b>ENTRIES</b> <span>…</span></span>
+    </div>
+    <button id="kill" class="kill" type="button">
+      KILL SWITCH
+      <small>stop trading, cancel orders, close positions</small>
+    </button>
+  </header>
+
+  <div id="banners" role="alert" aria-live="assertive"></div>
+
+  <main>
+    <section class="kpis" aria-label="Today at a glance">
+      <article class="card">
+        <h2>Today's P&amp;L</h2>
+        <p class="big" id="pnl-total">—</p>
+        <p class="muted" id="pnl-split">realised — · open —</p>
+      </article>
+      <article class="card">
+        <h2>Daily loss limit used</h2>
+        <p class="big" id="loss-used">—</p>
+        <progress id="loss-bar" max="100" value="0" aria-label="Daily loss limit used"></progress>
+        <p class="muted" id="loss-note">limit —</p>
+      </article>
+      <article class="card">
+        <h2>Orders today</h2>
+        <p class="big" id="orders">—</p>
+        <progress id="orders-bar" max="100" value="0" aria-label="Orders used"></progress>
+        <p class="muted" id="orders-note">order legs used / allowed</p>
+      </article>
+      <article class="card">
+        <h2>Open positions</h2>
+        <p class="big" id="positions-count">—</p>
+        <progress id="positions-bar" max="100" value="0" aria-label="Positions used"></progress>
+        <p class="muted" id="limits-note">—</p>
+      </article>
+    </section>
+
+    <section class="market" id="market" aria-label="Market"></section>
+
+    <section>
+      <h2 class="section">Option chain <span class="muted" id="chain-note"></span></h2>
+      <div class="scroll">
+        <table class="chain" id="chain">
+          <thead>
+            <tr class="group"><th colspan="8" class="ce">CALLS (CE)</th><th></th><th colspan="8" class="pe">PUTS (PE)</th></tr>
+            <tr>
+              <th>IV %</th><th>Delta</th><th>Gamma</th><th>Theta/day</th><th>Vega</th><th>Bid</th><th>Ask</th><th>Last</th>
+              <th class="strike">Strike</th>
+              <th>Last</th><th>Bid</th><th>Ask</th><th>Vega</th><th>Theta/day</th><th>Gamma</th><th>Delta</th><th>IV %</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="muted small">Greeks use the future as the underlying and the middle of bid/ask as the option price. A dash means no usable price. Dimmed numbers are stale.</p>
+    </section>
+
+    <section>
+      <h2 class="section">Open positions</h2>
+      <div class="scroll">
+        <table class="plain" id="positions">
+          <thead><tr><th>ID</th><th>Strategy</th><th>Legs (entry → now)</th><th>Stop-loss</th><th>Target</th><th class="num">Open P&amp;L</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section">What the risk engine just decided</h2>
+      <ul class="decisions" id="decisions"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p id="footer-mode"></p>
+    <p>Markets are risky and most retail F&amp;O traders lose money. Nothing on this page is advice.
+       To turn trading back on after a kill, use the command line: <code>python -m trader.risk reset</code></p>
+    <p class="muted" id="updated">—</p>
+  </footer>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Market-data feed settings. Changing these should be a deliberate git commit
+# (note it in config/CHANGELOG.md).
+version: 1
+underlying: NIFTY
+# Subscribe to ATM +/- this many listed strikes (both CE and PE).
+strikes_each_side: 5
+# No tick for this many seconds => feed is UNHEALTHY and trading is blocked.
+stale_seconds: 10
+# Connected but silent for this long => drop and reconnect.
+reconnect_after_seconds: 30
+# ltp | quote | snap_quote. Only snap_quote carries bid/ask, which the
+# risk engine needs for its spread check.
+quote_mode: snap_quote

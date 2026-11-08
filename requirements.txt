@@ -1,0 +1,14 @@
+# Pinned runtime deps (add more as modules land)
+pydantic==2.14.3
+pydantic-settings==2.16.2
+PyOTP==2.10.0
+PyYAML==6.0.3
+smartapi-python==1.5.5
+# smartapi-python imports these but doesn't declare them
+logzero==1.7.0
+websocket-client==1.9.2
+# Web server (webhook + dashboard)
+fastapi==0.162.2
+uvicorn==0.54.0
+# Journal / analytics database
+SQLAlchemy==2.1.8

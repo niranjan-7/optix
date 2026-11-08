@@ -1,0 +1,32 @@
+# Strategy rules. Edit values here, NOT in code. Every change should be its own
+# git commit with a line in config/CHANGELOG.md (what changed, why).
+#
+# IMPORTANT: write times in quotes ("09:30"). Unquoted times like 10:30 are read
+# by YAML as the number 630, which would silently mean the wrong time.
+version: 1
+
+strategies:
+  - name: example_momentum
+    type: example_momentum
+    # EXAMPLE ONLY - NOT TESTED FOR PROFIT. It exists to show the template.
+    # Paper mode only; live trading is separately gated by LIVE_TRADING.
+    enabled: true
+    params:
+      # Entry: NIFTY future moved >= move_points over the last lookback_minutes.
+      # Up-move buys the ATM call; down-move buys the ATM put.
+      lookback_minutes: 5
+      move_points: 30
+      lots: 1
+      # Exits, as % of the option premium at entry.
+      stop_loss_pct: 25
+      target_pct: 40
+      # No new entries outside this window; everything is closed at square_off.
+      entry_start: "09:30"
+      entry_end: "14:30"
+      square_off: "15:15"
+      max_entries_per_day: 2
+      cooldown_minutes: 5
+      skip_expiry_day: true
+      max_quote_age_seconds: 10
+      # Keep this above execution.yaml's order_timeout_seconds (20).
+      exit_retry_seconds: 25

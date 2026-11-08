@@ -1,0 +1,10 @@
+# Journal and market-snapshot storage. Deliberate git commit + CHANGELOG line for changes.
+version: 1
+
+journal_file: data/journal.db     # trades, signals, fills. SMALL and PRECIOUS: back this up.
+market_file: data/market.db       # chain snapshots for backtesting. Large; safe to delete or prune.
+
+snapshots:
+  enabled: true
+  interval_seconds: 5     # one saved snapshot of the whole subscribed chain every N seconds
+  keep_days: 60           # older snapshots are deleted at start-up (python -m trader.journal prune-snapshots)

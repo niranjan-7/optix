@@ -1,0 +1,35 @@
+# How orders are placed and how PAPER fills are simulated. Deliberate git commit +
+# CHANGELOG line for any change.
+version: 1
+
+orders:
+  # Entry/exit orders are "marketable limits": priced a little through the
+  # opposite side of the book so they fill, but never at an absurd price.
+  limit_buffer_pct: 1.0
+  # Emergency square-off (kill / daily stop / end of day) accepts a worse price to get out.
+  emergency_buffer_pct: 5.0
+  # An order not completely filled this long after placement is cancelled (any
+  # part already filled is kept and tracked).
+  order_timeout_seconds: 20
+  # While positions must be closed, retry stragglers this often.
+  flatten_retry_seconds: 10
+
+paper:
+  # PAPER MODE ONLY. Real fills can be worse: queue position, gaps, partial fills.
+  slippage_ticks: 1          # 1 tick = Rs0.05 worse than the touch price
+  latency_seconds: 0.5       # delay between placing and filling
+  partial_fill_probability: 0.0   # chance an order (2+ lots) fills in two parts
+  partial_fill_fraction: 0.5
+  reject_probability: 0.0    # chance the simulated broker rejects an order
+  seed: null                 # set a number for reproducible randomness
+
+fees:
+  # Estimates, charged on every fill. Real charges also include STT, exchange
+  # fees, GST and stamp duty; set pct_of_turnover to approximate them.
+  brokerage_per_order: 20.0
+  pct_of_turnover: 0.0
+
+live:
+  product_type: INTRADAY     # positions are auto-squared by the broker at its cut-off
+
+portfolio_file: data/portfolio.json

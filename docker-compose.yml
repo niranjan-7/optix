@@ -1,0 +1,46 @@
+# Start:  docker compose up -d --build        Stop:  docker compose down
+# See README.md for the full operator runbook.
+services:
+  trader:
+    build: .
+    image: options-trader:local
+    container_name: options-trader
+
+    # Comes back by itself after the nightly/daily restart, a crash, or a reboot. (After `docker compose down`
+    # it stays down until you start it.) NOTE: real orders can never resume unattended: they need a person to
+    # type a confirmation at start-up, which a restart cannot do.
+    restart: unless-stopped
+
+    # Secrets and switches come from .env (LIVE_TRADING defaults to false). Not copied into the image.
+    env_file: .env
+
+    # Listen on all addresses INSIDE the container; the port below is published to this computer ONLY.
+    command: ["python", "-m", "trader", "--host", "0.0.0.0", "--trust-proxy-from-any-peer"]
+    ports:
+      - "127.0.0.1:8000:8000"       # never remove the 127.0.0.1: it is what keeps the dashboard private
+
+    volumes:
+      - ./data:/app/data            # journal, recorded prices, kill-switch state, positions: BACK THIS UP
+      - ./logs:/app/logs
+      - ./config:/app/config:ro     # rules and limits: edited on the host, committed to git, read-only here
+
+    # Hardening: the program needs none of these powers.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

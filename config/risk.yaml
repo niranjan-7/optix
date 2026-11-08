@@ -1,0 +1,58 @@
+# Risk limits. Every signal - from a strategy OR the webhook - is checked against
+# these before anything can reach a broker. Change values only as a deliberate
+# git commit, with a line in config/CHANGELOG.md saying what and why.
+#
+# Money is in rupees. Write times in quotes ("09:20"): unquoted 10:30 is read by
+# YAML as the number 630.
+#
+# Context for sizing: NIFTY lot = 65. Loss at a 25% stop on a Rs100 option, 1 lot
+# is about Rs1,600.
+version: 1
+
+limits:
+  # Loss if the position is closed AT ITS STOP-LOSS. Entries risking more are rejected.
+  max_loss_per_trade: 2000
+  # Worst case if the stop fails (gap / no liquidity): full premium for a long option,
+  # (spread width - credit) for spreads and condors.
+  max_structure_loss: 10000
+  # Realised + unrealised loss for the day. When reached: no more entries today.
+  max_loss_per_day: 4000
+  # ...and also cancel pending orders and close every open position.
+  square_off_on_daily_loss: true
+  max_open_positions: 2
+  max_lots_per_order: 1
+  # Counts order LEGS of approved entries (an iron condor uses 4).
+  max_orders_per_day: 5
+
+window:
+  weekdays: [Mon, Tue, Wed, Thu, Fri]
+  trading_start: "09:20"
+  no_new_entries_after: "15:00"
+  trading_end: "15:15"
+  # Safety net: if positions are still open at this time, the engine itself
+  # asks for everything to be closed, whatever the strategies are doing.
+  force_square_off: "15:20"
+  # Exits are NEVER blocked by time or limits - only entries are.
+
+expiry_day:
+  block_new_entries: false
+  # Size cap on expiry day (the stricter of this and limits.max_lots_per_order applies).
+  max_lots_per_order: 1
+
+quotes:
+  max_spread_pct: 3.0      # (ask-bid) as % of mid price
+  max_spread_abs: 2.0      # rupees
+  max_quote_age_seconds: 10
+
+structures:
+  # Only these may be traded. Others are recognised but rejected as DISABLED.
+  # Possible: LONG_OPTION, VERTICAL_DEBIT, VERTICAL_CREDIT, IRON_CONDOR
+  # Naked short options are NEVER allowed, whatever this list says.
+  allowed: [LONG_OPTION]
+
+inflight:
+  # An approved order is counted as "in flight" until execution reports back,
+  # or this many seconds pass. Stops a burst of signals exceeding the limits.
+  pending_ttl_seconds: 60
+
+state_file: data/risk_state.json

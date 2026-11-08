@@ -1,0 +1,18 @@
+# Never ship secrets, state or history into the image.
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+data
+logs
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+tests
+docs
+*.db
+*.sqlite
+.DS_Store
+requirements-dev.txt

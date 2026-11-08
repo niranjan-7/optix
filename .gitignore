@@ -1,0 +1,14 @@
+# Secrets & local state — never commit these
+.env
+*.db
+*.sqlite
+data/
+logs/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+*.egg-info/
+build/
+dist/

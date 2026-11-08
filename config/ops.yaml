@@ -1,0 +1,14 @@
+# Day-to-day operation. Deliberate git commit + CHANGELOG line for any change.
+version: 1
+
+# The program restarts itself once a day at this time (IST) so it always starts the day with today's
+# contracts, expiries and a fresh broker login. Docker (restart: unless-stopped) brings it back up.
+# It is POSTPONED while any position or order is open - never restarts on top of a live position.
+daily_restart: "08:30"
+restart_postponed_alert_seconds: 1800
+
+# Ping HEARTBEAT_URL (from .env) this often. If you set up a watchdog check, expect a ping at about this rate.
+heartbeat_seconds: 60
+
+# Refresh the broker login this often if it has gone stale (live market data only).
+token_check_seconds: 60

@@ -1,0 +1,25 @@
+# Webhook receiver settings. Secrets are NOT here - they live in .env.
+# Deliberate git commit + CHANGELOG line for any change.
+version: 1
+
+host: 127.0.0.1          # keep local; expose via the Cloudflare tunnel, never by opening a port
+port: 8000
+
+allowed_symbols: [NIFTY]
+# When an alert has no "expiry", use the nearest one - but not on expiry day itself.
+skip_expiry_day: true
+
+max_body_bytes: 4096
+# If an alert includes a "timestamp", reject it when older than this (replay protection).
+max_age_seconds: 120
+
+# TradingView can only send a body (no custom headers), so the shared secret may
+# also be given as a "secret" field in the JSON. Set false if you only use headers.
+allow_body_secret: true
+
+rate_limit:
+  per_minute: 20         # sustained requests/minute, all callers together
+  burst: 5               # short bursts allowed up to this many
+auth_failures:
+  max_per_minute: 5      # wrong secret this many times from one address...
+  block_minutes: 10      # ...and that address is blocked for this long

@@ -117,3 +117,38 @@ def test_session_tokens_are_scrubbed_from_logs():
     AngelAuth(make_settings(), client_factory=lambda k: fc).login()
     for tok in ("JWT-SECRET-VALUE", "REFRESH-SECRET-VALUE", "FEED-SECRET-VALUE"):
         assert tok not in logging_utils.redact(f"header {tok}")
+
+
+# ------------------------------------------------------------ `python -m trader.auth`
+
+def _cli(monkeypatch, creds, factory):
+    from trader import auth as auth_mod
+    for k in ("ANGEL_API_KEY", "ANGEL_CLIENT_ID", "ANGEL_PIN", "ANGEL_TOTP_SECRET"):
+        monkeypatch.delenv(k, raising=False)
+    for k, v in creds.items():
+        monkeypatch.setenv(k, v)
+    out = []
+    code = auth_mod._cli([], auth_factory=factory, out=out.append)
+    return code, "\n".join(out)
+
+
+GOOD_CREDS = {"ANGEL_API_KEY": "KEY12345", "ANGEL_CLIENT_ID": "A12345", "ANGEL_PIN": "9876", "ANGEL_TOTP_SECRET": TOTP}
+
+
+def test_login_check_reports_success_without_printing_secrets(monkeypatch):
+    class Ok:
+        def __init__(self, s): pass
+        def login(self): return None
+    code, out = _cli(monkeypatch, GOOD_CREDS, Ok)
+    assert code == 0 and "Login OK for client A12345" in out and "No orders were placed" in out
+    assert not any(secret in out for secret in ("KEY12345", "9876", TOTP))
+
+
+def test_login_check_explains_a_refusal_and_missing_settings(monkeypatch):
+    class Refused:
+        def __init__(self, s): pass
+        def login(self): raise AuthError("Angel One rejected the login: Invalid TOTP. Check your clock.")
+    code, out = _cli(monkeypatch, GOOD_CREDS, Refused)
+    assert code == 1 and "Login FAILED" in out and "Invalid TOTP" in out
+    code, out = _cli(monkeypatch, {}, Refused)
+    assert code == 2 and "ANGEL_API_KEY" in out and ".env" in out

@@ -113,3 +113,33 @@ class AngelAuth:
             return self.login()
         assert self.session is not None
         return self.session
+
+
+def _cli(argv: list[str] | None = None, auth_factory: Callable[[Settings], Any] = AngelAuth,
+         out: Callable[[str], None] = print) -> int:
+    """`python -m trader.auth`: check that your Angel One login settings work.
+
+    It only logs in. It places no orders, and never prints a password, key or token.
+    Exit code: 0 = login worked, 1 = Angel One refused or could not be reached, 2 = settings missing.
+    """
+    from .config import load_settings
+
+    s = load_settings()
+    try:
+        s.require_angel_credentials()
+    except ConfigError as e:
+        out(str(e))
+        return 2
+    try:
+        auth_factory(s).login()
+    except AuthError as e:
+        out(f"Login FAILED: {e}")
+        return 1
+    out(f"Login OK for client {s.angel_client_id}. Your Angel One settings work. (No orders were placed.)")
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(_cli())

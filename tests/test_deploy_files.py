@@ -158,7 +158,7 @@ def test_readme_carries_the_risk_disclaimer_and_the_operator_runbook():
 
 def test_every_relative_link_in_the_docs_points_at_a_file_that_exists():
     for doc in [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]:
-        for target in re.findall(r"\]\((?!https?://|#|mailto:)([^)\s#]+)", doc.read_text()):
+        for target in re.findall(r"\]\((?!https?://|#|mailto:|\.\./)([^)\s#]+)", doc.read_text()):   # ../ = GitHub-only links
             assert (doc.parent / target).exists(), f"{doc.name} links to missing {target}"
 
 

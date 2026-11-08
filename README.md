@@ -1,8 +1,69 @@
 # NIFTY Options Trading Assistant
 
-A semi-automated system for trading NIFTY index options through Angel One. It watches the market, proposes
-trades from simple rules you can edit, checks every trade against strict safety limits, records everything,
-and sends alerts to your phone. **It starts in paper mode: no real orders, no real money.**
+**An open-source, paper-first toolkit for learning to trade NIFTY options with Angel One's SmartAPI.**
+
+It watches option prices, proposes trades from simple rules you can edit, checks every trade against strict safety
+limits, records everything in a journal, and alerts your phone. It starts in **paper mode: no real orders, no real
+money.** It is built to help people *learn*, to make good habits easy (stop-losses, position limits, an evening
+review), and to show how a trading system can be built with safety first. It is free to use, study and change.
+
+> **New here? Start with the Beginner's Guide:** [PDF](docs/Beginners-Guide.pdf) · [Markdown](docs/user-guide.md).
+> It walks you from downloading the project, to creating your Angel One API key, to your first paper trade.
+
+[![tests](../../actions/workflows/tests.yml/badge.svg)](../../actions/workflows/tests.yml)
+
+## Why this exists
+
+Most retail F&O traders lose money, often through preventable mistakes: no stop-loss, oversized positions, chasing
+losses, trading on bad data, not keeping a record. Most "algo trading" examples online skip the safety. This project
+puts the safety first and keeps everything **readable and auditable**, so you can see exactly why every trade was
+taken or refused.
+
+## What you can do with it
+
+- **Learn** how an options trading system fits together: prices, Greeks, rules, risk checks, orders, a journal.
+- **Practise** with real market prices and a paper broker, with no money at risk.
+- **Edit the rules** in plain text files, and keep a record of every change and experiment.
+- **Review** your trading honestly: weekly summaries, and an evening review of whether each trade followed the rules.
+- **Replay** recorded days (with the limits of backtesting spelled out).
+- **Connect TradingView alerts** (optional) through the same safety checks.
+- **Extend it:** add strategies, underlyings, or other brokers. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Status: early (alpha). Read the honest part
+
+- About 670 automated tests pass, and the Docker setup has been run end to end on simulated prices.
+- **The live Angel One connection and real order placement have never been run against the real servers.** They are
+  written to Angel One's documented formats and need a supervised 1-lot test before anyone relies on them.
+  See [What has and has not been verified](#what-has-and-has-not-been-verified).
+- **Nothing here is a trading strategy you can rely on.** The included example strategy is "example only, not tested
+  for profit". The project makes no claim that any rule set is, or will be, profitable.
+
+## Independent project
+
+This is an independent, community project. It is **not affiliated with, endorsed by, or supported by Angel One**,
+TradingView, Telegram or Cloudflare. Their names are trademarks of their owners. "SmartAPI" is Angel One's API; this
+project simply uses it.
+
+## Quick start (about 10 minutes, no account needed)
+
+You need [Git](https://git-scm.com/downloads) and [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
+```bash
+git clone https://github.com/<your-account>/<this-repo>.git
+cd <this-repo>
+cp .env.example .env          # then edit .env: set WEBHOOK_SECRET and TRADER_FEED=simulated (see the guide)
+scripts/start.sh              # Windows: docker compose up -d --build
+```
+
+Open **http://127.0.0.1:8000/**. You will see the dashboard on made-up prices. The
+[Beginner's Guide](docs/user-guide.md) covers everything else, including real prices from Angel One.
+
+## Contributing, security, license
+
+- Contributions are welcome: [CONTRIBUTING.md](CONTRIBUTING.md) (including the safety rules a change must never break).
+- Security issues: please report privately, see [SECURITY.md](SECURITY.md).
+- Be kind: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+- License: [MIT](LICENSE). The software is provided as is, with no warranty and no liability.
 
 ---
 

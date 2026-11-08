@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.12", "3.11"]
+    # Python 3.13 is the version the project is developed and tested on. 3.11 and 3.12 are expected to work
+    # but are unverified, so they may fail without failing the build.
+    continue-on-error: ${{ matrix.python-version != '3.13' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -e .
+      - name: Test
+        run: python -m pytest -q

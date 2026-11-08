@@ -1,3 +1,6 @@
 -r requirements.txt
 pytest==9.2.0
 httpx==0.28.1  # FastAPI test client
+# Used only to build and check the PDF guide (tools/build_guide_pdf.py)
+reportlab==5.1.0
+pypdf==7.0.0

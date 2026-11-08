@@ -6,7 +6,21 @@ build-backend = "setuptools.build_meta"
 name = "trader"
 version = "0.1.0"
 requires-python = ">=3.11"
-description = "Semi-automated NIFTY options system (paper mode first)"
+description = "Open-source, paper-first toolkit for learning NIFTY options trading with Angel One's SmartAPI"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Niranjan K" }]
+keywords = ["trading", "options", "NIFTY", "angel-one", "smartapi", "paper-trading", "education", "risk-management"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Education",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trading Dashboard</title>
+  <title>Optix Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="stylesheet" href="/static/dashboard.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <h1>Options Trading</h1>
+      <h1>Optix</h1>
       <p id="subtitle">Loading…</p>
     </div>
     <div class="pills" aria-label="System status">
@@ -81,6 +82,33 @@
           <tbody></tbody>
         </table>
       </div>
+    </section>
+
+    <section id="performance">
+      <h2 class="section">Performance <span class="muted" id="perf-note"></span></h2>
+      <div class="perf">
+        <article class="card">
+          <h2>Net P&amp;L curve (last 90 days, closed trades)</h2>
+          <svg id="curve" class="curve" viewBox="0 0 600 160" role="img" aria-label="Cumulative net P&L by day"></svg>
+          <p class="muted small" id="curve-note">No closed trades yet.</p>
+        </article>
+        <article class="card">
+          <h2>Closed today</h2>
+          <ul class="closed" id="closed-today"></ul>
+        </article>
+      </div>
+      <div class="scroll spaced">
+        <table class="plain" id="monthly">
+          <thead><tr><th>Month</th><th class="num">Trades</th><th class="num">Win %</th><th class="num">Gross</th><th class="num">Fees</th>
+            <th class="num">Net P&amp;L</th><th class="num">Best</th><th class="num">Worst</th><th class="num">Max drawdown</th><th class="num">Running total</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="downloads">
+        <a class="btn" href="/export/monthly.csv" download>Download monthly report (CSV)</a>
+        <a class="btn" href="/export/trades.csv" download>Download all trades (CSV)</a>
+        <span class="muted small">Opens in Excel. Under 30 trades, results are mostly luck.</span>
+      </p>
     </section>
 
     <section>

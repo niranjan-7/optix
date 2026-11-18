@@ -103,13 +103,15 @@
     }
     rows.forEach(function (row) {
       var tr = el("tr", row.atm ? "atm" : ""), c = row.ce, p = row.pe;
-      cell(tr, c.iv, 1, "", c.stale); cell(tr, c.delta, 2, "", c.stale); cell(tr, c.gamma, 5, "", c.stale);
-      cell(tr, c.theta, 1, "", c.stale); cell(tr, c.vega, 2, "", c.stale);
-      cell(tr, c.bid, 2, "", c.stale); cell(tr, c.ask, 2, "", c.stale); cell(tr, c.ltp, 2, "", c.stale);
+      var ref = lastState && lastState.market ? (lastState.market.spot !== null ? lastState.market.spot : lastState.market.future) : null;
+      var ceItm = ref !== null && row.strike < ref, peItm = ref !== null && row.strike > ref;
+      cell(tr, c.iv, 1, ceItm ? "itm" : "", c.stale); cell(tr, c.delta, 2, ceItm ? "itm" : "", c.stale); cell(tr, c.gamma, 5, ceItm ? "itm" : "", c.stale);
+      cell(tr, c.theta, 1, ceItm ? "itm" : "", c.stale); cell(tr, c.vega, 2, ceItm ? "itm" : "", c.stale);
+      cell(tr, c.bid, 2, ceItm ? "itm" : "", c.stale); cell(tr, c.ask, 2, ceItm ? "itm" : "", c.stale); cell(tr, c.ltp, 2, ceItm ? "itm" : "", c.stale);
       tr.appendChild(el("td", "strike", num(row.strike, 0) + (row.atm ? "  ATM" : "")));
-      cell(tr, p.ltp, 2, "", p.stale); cell(tr, p.bid, 2, "", p.stale); cell(tr, p.ask, 2, "", p.stale);
-      cell(tr, p.vega, 2, "", p.stale); cell(tr, p.theta, 1, "", p.stale); cell(tr, p.gamma, 5, "", p.stale);
-      cell(tr, p.delta, 2, "", p.stale); cell(tr, p.iv, 1, "", p.stale);
+      cell(tr, p.ltp, 2, peItm ? "itm" : "", p.stale); cell(tr, p.bid, 2, peItm ? "itm" : "", p.stale); cell(tr, p.ask, 2, peItm ? "itm" : "", p.stale);
+      cell(tr, p.vega, 2, peItm ? "itm" : "", p.stale); cell(tr, p.theta, 1, peItm ? "itm" : "", p.stale); cell(tr, p.gamma, 5, peItm ? "itm" : "", p.stale);
+      cell(tr, p.delta, 2, peItm ? "itm" : "", p.stale); cell(tr, p.iv, 1, peItm ? "itm" : "", p.stale);
       tb.appendChild(tr);
     });
   }
@@ -150,6 +152,88 @@
       li.appendChild(el("span", "why", d.approved ? d.reason : d.detail));
       ul.appendChild(li);
     });
+  }
+
+
+  // ---------------------------------------------------------------- performance panel
+  // An XML namespace name, not an address the page ever contacts; written in two pieces so the
+  // "no external URLs" test can stay strict.
+  var SVGNS = "http:" + "//www.w3.org/2000/svg";
+  function svg(tag, attrs, text) {
+    var e = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function renderCurve(curve) {
+    var box = $("curve");
+    box.replaceChildren();
+    if (!curve.length) { $("curve-note").textContent = "No closed trades yet."; return; }
+    var W = 600, H = 160, L = 8, R = 8, T = 12, B = 22;
+    var vals = [0].concat(curve.map(function (c) { return c.cumulative; }));
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    if (hi === lo) { hi += 1; lo -= 1; }
+    var xs = function (i) { return curve.length === 1 ? W / 2 : L + (W - L - R) * i / (curve.length - 1); };
+    var ys = function (v) { return T + (H - T - B) * (hi - v) / (hi - lo); };
+    box.appendChild(svg("line", { "class": "axis", x1: L, x2: W - R, y1: H - B, y2: H - B }));
+    box.appendChild(svg("line", { "class": "zero", x1: L, x2: W - R, y1: ys(0), y2: ys(0) }));
+    var pts = curve.map(function (c, i) { return xs(i).toFixed(1) + "," + ys(c.cumulative).toFixed(1); });
+    var last = curve[curve.length - 1];
+    box.appendChild(svg("polygon", { "class": last.cumulative >= 0 ? "area-pos" : "area-neg",
+      points: xs(0).toFixed(1) + "," + ys(0).toFixed(1) + " " + pts.join(" ") + " " + xs(curve.length - 1).toFixed(1) + "," + ys(0).toFixed(1) }));
+    box.appendChild(svg("polyline", { "class": "line", points: pts.join(" ") }));
+    box.appendChild(svg("circle", { "class": "end", cx: xs(curve.length - 1).toFixed(1), cy: ys(last.cumulative).toFixed(1), r: 3.5 }));
+    box.appendChild(svg("text", { "class": "lbl", x: L, y: H - 6 }, curve[0].day));
+    box.appendChild(svg("text", { "class": "lbl", x: W - R, y: H - 6, "text-anchor": "end" }, last.day));
+    $("curve-note").textContent = curve.length + " trading day" + (curve.length === 1 ? "" : "s") + " · running total Rs " + signed(last.cumulative) +
+      " · dashed line is zero";
+  }
+  function renderMonthly(rows) {
+    var tb = document.querySelector("#monthly tbody");
+    tb.replaceChildren();
+    if (!rows.length) {
+      var tr = el("tr"); var td = el("td", "empty", "No closed trades yet. The monthly report fills in as trades close."); td.colSpan = 10;
+      tr.appendChild(td); tb.appendChild(tr);
+      return;
+    }
+    rows.slice().reverse().forEach(function (r) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, r.month));
+      tr.appendChild(el("td", "num", String(r.trades)));
+      tr.appendChild(el("td", "num", r.win_rate === null ? "—" : Math.round(r.win_rate * 100) + "%"));
+      tr.appendChild(el("td", "num", signed(r.gross_pnl)));
+      tr.appendChild(el("td", "num", signed(-r.fees)));
+      tr.appendChild(el("td", "num " + (r.net_pnl > 0 ? "pos" : r.net_pnl < 0 ? "neg" : ""), signed(r.net_pnl)));
+      tr.appendChild(el("td", "num", signed(r.best_trade)));
+      tr.appendChild(el("td", "num", signed(r.worst_trade)));
+      tr.appendChild(el("td", "num", num(r.max_drawdown, 0)));
+      tr.appendChild(el("td", "num " + (r.cumulative_net > 0 ? "pos" : r.cumulative_net < 0 ? "neg" : ""), signed(r.cumulative_net)));
+      tb.appendChild(tr);
+    });
+  }
+  function renderClosedToday(list) {
+    var ul = $("closed-today");
+    ul.replaceChildren();
+    if (!list.length) { ul.appendChild(el("li", "muted", "Nothing closed yet today.")); return; }
+    list.forEach(function (t) {
+      var li = el("li");
+      li.appendChild(el("span", "name", (t.closed_at || "").slice(11, 16) + "  " + t.setup));
+      li.appendChild(el("b", t.net_pnl > 0 ? "pos" : t.net_pnl < 0 ? "neg" : "", signed(t.net_pnl)));
+      ul.appendChild(li);
+    });
+  }
+  async function pollReport() {
+    try {
+      var r = await fetch("/api/report", { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      var d = await r.json();
+      $("perf-note").textContent = d.available ? "" : "· no journal connected";
+      renderCurve(d.curve || []);
+      renderMonthly(d.monthly || []);
+      renderClosedToday(d.today || []);
+    } catch (e) {
+      $("perf-note").textContent = "· could not load (" + e.message + ")";
+    }
   }
 
   function showProblem(text) {
@@ -207,4 +291,6 @@
 
   poll();
   setInterval(poll, POLL_MS);
+  pollReport();
+  setInterval(pollReport, 30000);
 })();

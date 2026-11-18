@@ -8,6 +8,8 @@ the internet through the tunnel, this module is deliberately locked down:
 * Every dashboard request must carry a localhost `Host` header. This defeats "DNS
   rebinding", where a hostile website tricks your browser into talking to your own
   computer under another name.
+* The report and CSV endpoints are read-only GETs behind the same host check; CSV text cells are
+  neutralised against spreadsheet formula injection.
 * The KILL endpoint only accepts a same-origin POST that carries a custom header, so
   another website cannot trigger it from your browser.
 * There is a KILL button but NO reset button, on purpose: turning trading back on is a
@@ -19,7 +21,8 @@ from __future__ import annotations
 
 import logging
 import math
-from datetime import datetime
+from dataclasses import asdict
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlparse
@@ -32,6 +35,7 @@ from .feed import HealthStatus, Instr, Tick
 from .greeks import IST, analyse, time_to_expiry
 from .instruments import InstrumentMaster
 from .portfolio import Portfolio
+from .reports import monthly_csv
 from .risk import RiskEngine
 from .webhook import PUBLIC_PATHS
 
@@ -147,6 +151,35 @@ class DashboardData:
         }
 
 
+    # ------------------------------------------------------------ reports (read-only, from the journal)
+    def report(self, days: int = 90) -> dict[str, Any]:
+        """Monthly table, the day-by-day P&L curve, and today's closed trades, for the Performance panel."""
+        if self._journal is None:
+            return {"monthly": [], "curve": [], "today": [], "available": False}
+        today = self._clock().astimezone(IST).date()
+        monthly = self._journal.monthly()
+        curve = self._journal.pnl_curve(today - timedelta(days=max(1, days) - 1), today)
+        closed_today = [
+            {"id": t.id, "closed_at": t.closed_at, "setup": t.setup, "lots": t.lots, "net_pnl": _f(t.net_pnl),
+             "exit_reason": t.exit_reason, "followed_rules": t.followed_rules}
+            for t in self._journal.trades(today, today)]
+        return {"available": True, "monthly": [_clean(asdict(r)) for r in monthly], "curve": [_clean(c) for c in curve],
+                "today": closed_today}
+
+    def csv_export(self, kind: str) -> str | None:
+        if self._journal is None:
+            return None
+        if kind == "trades":
+            return self._journal.trades_csv_text()
+        if kind == "monthly":
+            return monthly_csv(self._journal.monthly())
+        return None
+
+
+def _clean(d: dict[str, Any]) -> dict[str, Any]:
+    return {k: (_f(v) if isinstance(v, float) else v) for k, v in d.items()}
+
+
 def install_dashboard(app: FastAPI, data: DashboardData, kill: Callable[[str], None]) -> None:
     """Add the dashboard routes to `app`. `kill(reason)` must engage the kill switch."""
 
@@ -175,6 +208,10 @@ def install_dashboard(app: FastAPI, data: DashboardData, kill: Callable[[str], N
     async def js() -> Response:
         return asset("dashboard.js", "text/javascript; charset=utf-8")
 
+    @app.get("/static/favicon.svg")
+    async def favicon() -> Response:
+        return asset("favicon.svg", "image/svg+xml")
+
     @app.get("/static/dashboard.css")
     async def css() -> Response:
         return asset("dashboard.css", "text/css; charset=utf-8")
@@ -186,6 +223,26 @@ def install_dashboard(app: FastAPI, data: DashboardData, kill: Callable[[str], N
         except Exception:
             log.exception("dashboard state failed")
             return JSONResponse({"detail": "state unavailable"}, status_code=500)
+
+    @app.get("/api/report")
+    async def report() -> JSONResponse:
+        try:
+            return JSONResponse(await run_in_threadpool(data.report))
+        except Exception:
+            log.exception("dashboard report failed")
+            return JSONResponse({"detail": "report unavailable"}, status_code=500)
+
+    @app.get("/export/{kind}.csv")
+    async def export(kind: str) -> Response:
+        try:
+            text = await run_in_threadpool(data.csv_export, kind)
+        except Exception:
+            log.exception("dashboard export failed")
+            return JSONResponse({"detail": "export unavailable"}, status_code=500)
+        if text is None:
+            return JSONResponse({"detail": "Not found"}, status_code=404)
+        return Response(text, media_type="text/csv; charset=utf-8",
+                        headers={"Content-Disposition": f'attachment; filename="optix-{kind}.csv"'})
 
     @app.post("/api/kill")
     async def kill_switch(request: Request) -> JSONResponse:

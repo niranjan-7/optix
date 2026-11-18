@@ -2,14 +2,14 @@
   --bg: #f4f6f9; --surface: #ffffff; --text: #14181f; --muted: #566070; --border: #d8dde5;
   --good: #0b7a3e; --bad: #b3261e; --warn: #8a5a00; --info: #1d5bbf;
   --good-bg: #e3f4ea; --bad-bg: #fbe7e5; --warn-bg: #fff1d6; --info-bg: #e5eefc;
-  --kill: #c62828; --kill-text: #ffffff; --atm: #fff6d6;
+  --kill: #c62828; --kill-text: #ffffff; --atm: #fff6d6; --itm: #f1f6fd;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0e1116; --surface: #161b22; --text: #e8ecf1; --muted: #98a2b3; --border: #2a313c;
     --good: #52c78b; --bad: #ff7a70; --warn: #e6b34f; --info: #86aeff;
     --good-bg: #12301f; --bad-bg: #3a1a18; --warn-bg: #36290f; --info-bg: #14233d;
-    --kill: #e53935; --atm: #2b2711;
+    --kill: #e53935; --atm: #2b2711; --itm: #131c2b;
   }
 }
 * { box-sizing: border-box; }
@@ -93,3 +93,26 @@ footer { padding: 18px 16px 40px; max-width: 1280px; margin: 0 auto; color: var(
   footer { padding-bottom: 110px; }
   .big { font-size: 1.45rem; }
 }
+
+/* ---- performance panel ---- */
+.perf { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 12px; }
+.spaced { margin-top: 12px; }
+.curve { width: 100%; height: auto; display: block; }
+.curve .axis { stroke: var(--border); stroke-width: 1; }
+.curve .zero { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.curve .line { fill: none; stroke: var(--info); stroke-width: 2; stroke-linejoin: round; }
+.curve .area-pos { fill: var(--good); opacity: .12; } .curve .area-neg { fill: var(--bad); opacity: .12; }
+.curve .lbl { fill: var(--muted); font-size: 11px; }
+.curve .end { fill: var(--info); }
+.closed { list-style: none; margin: 0; padding: 0; font-size: .88rem; }
+.closed li { display: flex; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.closed li:last-child { border-bottom: 0; } .closed .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.downloads { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 10px; }
+.btn { display: inline-block; padding: 7px 14px; border: 1px solid var(--info); border-radius: 8px; color: var(--info);
+  text-decoration: none; font-weight: 600; font-size: .85rem; background: var(--surface); }
+.btn:hover { background: var(--info-bg); } .btn:focus-visible { outline: 3px solid var(--info); outline-offset: 2px; }
+/* in-the-money cells in the option chain get a light tint so the money line is easy to see */
+.chain td.itm { background: var(--itm); }
+.chain tr.atm td.itm { background: var(--atm); }
+@media (max-width: 760px) { .perf { grid-template-columns: 1fr; } }
+@media print { .kill, .downloads, .topbar .pills { display: none; } body { background: #fff; } }

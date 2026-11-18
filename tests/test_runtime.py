@@ -209,7 +209,7 @@ def test_main_flags_and_clean_shutdown(tmp_path, monkeypatch):
     built = {}
 
     def spy(*a, **k):
-        built["sys"] = orig(*a, **{**k, "start": False})
+        built["sys"] = orig(*a, **{**k, "start": False, "today": TODAY, "clock": lambda: TUE})
         return built["sys"]
     monkeypatch.setattr(runtime, "build_system", spy)
     orig_app = runtime.create_app

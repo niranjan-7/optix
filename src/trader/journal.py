@@ -22,7 +22,6 @@ Back up `data/journal.db` (copy the file while the app is stopped, or use the .d
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import logging
 import sys
@@ -40,6 +39,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column
 
 from .analytics import Summary, TradeStat, compute_summary, format_summary
 from .greeks import IST
+from .reports import daily_curve, format_monthly, monthly_csv, monthly_report, rows_to_csv
 from .risk import Decision
 from .signals import Signal
 from .snapshots import SnapshotStore, check_schema_version, open_sqlite
@@ -346,9 +346,23 @@ class Journal:
                 codes.update(x for x in c.split(",") if x)
         return len(rows), sum(1 for a, _ in rows if a), dict(codes)
 
+    def trade_stats(self, start: date | None = None, end: date | None = None) -> list[TradeStat]:
+        return [TradeStat(t.id, t.closed_at, t.setup, t.strategy, t.gross_pnl, t.fees, t.slippage_cost, t.net_pnl,
+                          t.followed_rules) for t in self.trades(start, end)]
+
+    def monthly(self, start: date | None = None, end: date | None = None):
+        """Calendar-month P&L table (see reports.py)."""
+        return monthly_report(self.trade_stats(start, end))
+
+    def pnl_curve(self, start: date | None = None, end: date | None = None) -> list[dict[str, Any]]:
+        return daily_curve(self.trade_stats(start, end))
+
+    def trades_csv_text(self, start: date | None = None, end: date | None = None) -> str:
+        cols = [c.name for c in TradeRow.__table__.columns]
+        return rows_to_csv(cols, ([getattr(t, c) for c in cols] for t in self.trades(start, end)))
+
     def summary(self, start: date, end: date) -> Summary:
-        stats = [TradeStat(t.id, t.closed_at, t.setup, t.strategy, t.gross_pnl, t.fees, t.slippage_cost, t.net_pnl,
-                           t.followed_rules) for t in self.trades(start, end)]
+        stats = self.trade_stats(start, end)
         total, approved, codes = self.signal_counts(start, end)
         return compute_summary(stats, start, end, total, approved, codes)
 
@@ -368,14 +382,10 @@ class Journal:
             s.commit()
 
     def export_csv(self, path: str | Path, start: date | None = None, end: date | None = None) -> int:
-        trades = self.trades(start, end)
-        cols = [c.name for c in TradeRow.__table__.columns]
+        text = self.trades_csv_text(start, end)
         with open(path, "w", newline="", encoding="utf-8") as f:
-            w = csv.writer(f)
-            w.writerow(cols)
-            for t in trades:
-                w.writerow([getattr(t, c) for c in cols])
-        return len(trades)
+            f.write(text)
+        return len(self.trades(start, end))
 
 
 # ====================================================================== CLI
@@ -444,6 +454,11 @@ def _cli(argv: list[str] | None = None, input_fn: Callable[[str], str] = input, 
     r.add_argument("--notes", default="", help="with --id")
     e = sub.add_parser("export", help="write trades to a CSV file for Excel"); period(e)
     e.add_argument("--csv", required=True)
+    m = sub.add_parser("report", help="monthly P&L report (optionally as a CSV for Excel)")
+    m.add_argument("--months", type=int, default=12, help="last N calendar months including this one (default 12)")
+    m.add_argument("--from", dest="start", type=_parse_day, help="first day, YYYY-MM-DD (overrides --months)")
+    m.add_argument("--to", dest="end", type=_parse_day, help="last day, YYYY-MM-DD")
+    m.add_argument("--csv", help="also write the monthly table to this CSV file")
     sub.add_parser("snapshots", help="show stored market snapshots")
     pr = sub.add_parser("prune-snapshots", help="delete old market snapshots")
     pr.add_argument("--keep-days", type=int)
@@ -489,6 +504,21 @@ def _cli(argv: list[str] | None = None, input_fn: Callable[[str], str] = input, 
                 print(ex, file=sys.stderr)
                 return 1
             print(f"Trade #{args.id} reviewed.")
+    elif args.cmd == "report":
+        end = args.end or today
+        if args.start:
+            start = args.start
+        else:
+            y, mo = end.year, end.month - (max(1, args.months) - 1)
+            while mo < 1:
+                y, mo = y - 1, mo + 12
+            start = date(y, mo, 1)
+        rows = j.monthly(start, end)
+        print(format_monthly(rows))
+        if args.csv:
+            with open(args.csv, "w", newline="", encoding="utf-8") as f:
+                f.write(monthly_csv(rows))
+            print(f"Wrote {len(rows)} month(s) to {args.csv}")
     elif args.cmd == "export":
         s, e_ = bounds()
         n = j.export_csv(args.csv, s, e_)

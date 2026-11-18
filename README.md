@@ -337,6 +337,7 @@ format, and a free Cloudflare Tunnel are explained in [docs/webhook.md](docs/web
 |---|---|
 | Weekly summary | `scripts/summary.sh` (add `--days 30` for a month) |
 | Evening review | `scripts/review.sh "Your Name"` |
+| Monthly P&L report | `scripts/report.sh` (add `--months 3`, or `--csv /app/data/monthly.csv` for Excel); also on the dashboard under **Performance**, with one-click CSV downloads |
 | Export trades to Excel | `docker compose exec trader python -m trader.journal export --csv /app/data/trades.csv --days 30` (then open `data/trades.csv`) |
 | Replay recorded days through the rules | see [docs/backtest.md](docs/backtest.md): **read its limits first** |
 

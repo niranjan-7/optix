@@ -318,7 +318,7 @@ def test_there_is_no_reset_endpoint_on_purpose(client):
     for path in ("/api/reset", "/api/reset-kill", "/reset"):
         assert client.post(path, headers=KILL_HEADERS).status_code in (404, 405)
     js = (STATIC / "dashboard.js").read_text()
-    assert set(re.findall(r"fetch\(\s*\"([^\"]+)\"", js)) == {"/api/state", "/api/kill"}   # the page can call nothing else
+    assert set(re.findall(r"fetch\(\s*\"([^\"]+)\"", js)) == {"/api/state", "/api/kill", "/api/report"}   # the page can call nothing else (report is a read-only GET)
 
 
 def test_a_profitable_day_uses_none_of_the_loss_limit(rig):

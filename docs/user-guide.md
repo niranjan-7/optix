@@ -341,6 +341,14 @@ scripts/summary.sh
 
 It shows the win rate, average win and loss, biggest drawdown, results by type of trade, and how many trades followed the rules. Be honest about small samples: **under about 30 trades, the numbers are mostly luck.** Write what you learned in `config/EXPERIMENTS.md`.
 
+### Every month: the monthly report
+
+```
+scripts/report.sh
+```
+
+One line per month: trades, win rate, fees, net profit or loss, best and worst trade, and the running total. The same table, a profit-and-loss curve, and two **Download (CSV)** buttons (opens in Excel) are on the dashboard under **Performance**.
+
 ### The kill switch: three ways
 
 It blocks all new orders, cancels pending orders and closes every position, and it **stays on until a person resets it**, even after a restart.
@@ -446,6 +454,7 @@ Run these in the Terminal, inside the project folder.
 | Re-enable after a kill | `scripts/reset.sh "Your Name" "why it is safe"` |
 | Evening review | `scripts/review.sh "Your Name"` |
 | Weekly summary | `scripts/summary.sh` |
+| Monthly report | `scripts/report.sh` |
 | Check my Angel One login | `docker compose run --rm trader python -m trader.auth` |
 | Find my Telegram chat number | `docker compose run --rm trader python -m trader.alerts whoami` |
 | Send a Telegram test | `docker compose run --rm trader python -m trader.alerts test` |
